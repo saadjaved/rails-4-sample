@@ -1,0 +1,62 @@
+- content_for :head do
+  :javascript
+    $(function() {
+      window.APP = new App(window.App.MyChannelsPage);
+    });
+
+- content_for :body_class, 'my-channels dark'
+.row
+  .medium-12.columns.white-panel
+    .my-channels-title-wrapper
+      = link_to new_channel_path, class: 'right s-button tiny create-channel' do
+        .icon.plus-icon
+        = t('channels.new')
+
+      %h4.my-channels-title= t('channels.title')
+    - if @channels.any?
+      %table.my-channels-table.my-channels-table-offset
+        .my-channels-paginate
+          = paginate @channels
+        %thead
+          %tr
+            %th{style: 'width: 12%;'}
+            %th{style: 'width: 24%;'}=t("channels.details")
+            %th{colspan: 4, style: 'width: 55%;'}=t("channels.actions")
+        %tbody
+          - @channels.each do |channel|
+            %tr
+              %td
+                = image_tag channel.image_tmp.present? || channel.image.url.blank? ? 'channel_thumbnail_v100x60.jpg' : channel.image.send(:v100x60).url
+              %td
+                .channel-title= format_name channel.name
+                %span.mute
+                  = t('channel.created')
+                  = channel.created_at.strftime("%Y/%m/%d")
+              %td
+                - if channel.is_running?
+                  = link_to channel_show_path(channel), class: 'button tiny transparent blue mixing-deck other-icon-offset' do
+                    .icon.mixing-icon
+                    = t('channel.mixing_deck')
+                  = link_to 'javascript:void(0);', class: 'button tiny transparent red other-icon-offset', 'data-bind' => 'click: function () { $root.stopChannel($element); }', 'data-token' => channel.token do
+                    .icon.icon-stop-red
+                    = t('channel.stop')
+                  = link_to start_wowza_channel_path(channel), class: 'button tiny transparent green hide start-channel no-margin' do
+                    .icon.play-green-transparent
+                    = t('channel.start')
+                - else
+                  = link_to start_wowza_channel_path(channel), class: 'button tiny transparent green' do
+                    .icon.play-green-transparent
+                    = t('channel.start')
+              %td
+                = link_to archive_videos_path(channel), class: 'button tiny transparent blue' do
+                  .icon.archive-blue
+                  = t('channel.video_archive')
+              %td
+                = link_to channel_watch_path(channel), class: 'button tiny transparent blue', :target => 'blank' do
+                  .icon.watch-channel-blue
+                  = t('channel.watch')
+              %td
+                = link_to edit_channel_path(channel), class: 'button tiny transparent blue' do
+                  .icon.icon-edit
+                  =t('channels.edit')
+      = paginate @channels
